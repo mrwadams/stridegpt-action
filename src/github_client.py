@@ -3,7 +3,7 @@ GitHub Client for STRIDE-GPT Action
 """
 
 from typing import List, Dict, Any, Optional
-from github import Github, PullRequest, Repository
+from github import Github, PullRequest, Repository, Issue
 
 
 class GitHubClient:
@@ -75,3 +75,18 @@ class GitHubClient:
     def is_public_repo(self) -> bool:
         """Check if the repository is public."""
         return not self.repo.private
+    
+    def get_issue(self, issue_number: int) -> Issue.Issue:
+        """Get an issue by number."""
+        return self.repo.get_issue(issue_number)
+    
+    def get_issue_description(self, issue_number: int) -> str:
+        """Get the description/body of an issue."""
+        issue = self.get_issue(issue_number)
+        return issue.body or ""
+    
+    def create_issue_comment(self, issue_number: int, body: str) -> str:
+        """Create a comment on an issue."""
+        issue = self.get_issue(issue_number)
+        comment = issue.create_comment(body)
+        return comment.html_url
