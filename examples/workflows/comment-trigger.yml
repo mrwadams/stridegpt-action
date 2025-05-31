@@ -17,7 +17,8 @@ jobs:
     
     steps:
       - name: Run STRIDE-GPT Analysis
-        uses: mrwadams/stride-gpt-action@v1
+        uses: mrwadams/stridegpt-action@main
         with:
           stride-api-key: ${{ secrets.STRIDE_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          trigger-mode: comment

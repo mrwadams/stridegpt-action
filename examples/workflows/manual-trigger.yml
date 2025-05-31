@@ -2,42 +2,16 @@ name: Manual Security Scan
 
 on:
   workflow_dispatch:
-    inputs:
-      pr-number:
-        description: 'Pull Request number to analyze'
-        required: true
-        type: number
-      
-      analysis-scope:
-        description: 'Scope of analysis'
-        required: true
-        default: 'changed-files'
-        type: choice
-        options:
-          - changed-files
-          - full-repo
 
 jobs:
   manual-analysis:
     runs-on: ubuntu-latest
-    
-    permissions:
-      contents: read
-      pull-requests: write
+    name: STRIDE Threat Modeling
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup PR context
-        run: |
-          echo "PR_NUMBER=${{ inputs.pr-number }}" >> $GITHUB_ENV
-      
       - name: Run STRIDE-GPT Analysis
-        uses: mrwadams/stride-gpt-action@v1
+        uses: mrwadams/stridegpt-action@main
         with:
           stride-api-key: ${{ secrets.STRIDE_API_KEY }}
-          trigger-mode: 'pr'
-        env:
-          MANUAL_PR_NUMBER: ${{ inputs.pr-number }}
-          ANALYSIS_SCOPE: ${{ inputs.analysis-scope }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          trigger-mode: manual
