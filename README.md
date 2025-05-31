@@ -6,9 +6,10 @@ AI-powered threat modeling for your GitHub repositories using the STRIDE methodo
 
 - **STRIDE threat detection** using AI-powered analysis
 - **Severity ratings** (Low/Medium/High)
-- **Markdown formatted reports** in PR comments
+- **Markdown formatted reports** in comments
 - **Support for public repositories**
 - **Analysis of changed files in PRs**
+- **Threat modeling of proposed features in issues**
 - **Multiple trigger modes** (manual, PR, comment)
 
 ## Status
@@ -60,7 +61,25 @@ jobs:
 
 - **Manual:** Go to Actions tab → "STRIDE-GPT Threat Modeling" → "Run workflow"
 - **Automatic:** Create or update a pull request
-- **Comment:** In PR comments, use `@stride-gpt analyze`
+- **Comment:** Use `@stride-gpt analyze` in PR or issue comments
+
+## Analysis Types
+
+The action automatically detects the context and performs different types of analysis:
+
+### 🔍 **Code Analysis** (PR Comments)
+When you comment `@stride-gpt analyze` on a **pull request**, the action:
+- Analyzes the changed code files in the PR
+- Identifies security vulnerabilities in the code
+- Reports threats with specific file locations and line numbers
+
+### 💡 **Feature Threat Modeling** (Issue Comments)  
+When you comment `@stride-gpt analyze` on an **issue**, the action:
+- Analyzes the feature description in the issue body
+- Identifies potential security threats in the proposed feature
+- Provides conceptual threat modeling before code is written
+
+**Perfect for:** Getting security feedback on proposed features, architecture changes, or new functionality during the planning phase.
 
 ## Usage Examples
 
@@ -129,7 +148,9 @@ jobs:
 
 ## Available Commands
 
-- `@stride-gpt analyze` - Run threat analysis on changed files
+- `@stride-gpt analyze` - Run threat analysis (context-aware):
+  - **In PR comments:** Analyzes changed code files  
+  - **In issue comments:** Analyzes feature description for threats
 
 ## Inputs
 
@@ -172,7 +193,8 @@ jobs:
 ## Limitations
 
 - Public repositories only
-- Analysis of changed files in PRs
+- PR analysis limited to changed files
+- Issue analysis requires feature description in issue body
 
 ## Support
 
