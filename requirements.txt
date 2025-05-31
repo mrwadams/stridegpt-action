@@ -1,0 +1,6 @@
+# STRIDE-GPT Action Dependencies
+PyGithub
+httpx
+pydantic
+tenacity
+python-dotenv

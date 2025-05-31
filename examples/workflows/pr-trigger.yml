@@ -1,0 +1,32 @@
+name: Automatic Security Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      # Only run on code changes
+      - '**.py'
+      - '**.js'
+      - '**.ts'
+      - '**.java'
+      - '**.go'
+      - '**.rb'
+      - '**.php'
+      - '**.cs'
+      - '**.swift'
+      - '**.kt'
+
+jobs:
+  security-check:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Run STRIDE-GPT Analysis
+        uses: mrwadams/stride-gpt-action@v1
+        with:
+          stride-api-key: ${{ secrets.STRIDE_API_KEY }}
+          trigger-mode: 'pr'

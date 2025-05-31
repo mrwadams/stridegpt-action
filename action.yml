@@ -1,0 +1,33 @@
+name: 'STRIDE-GPT Threat Modeling'
+description: 'Free AI-powered security threat modeling using STRIDE methodology'
+author: 'mrwadams'
+branding:
+  icon: 'shield'
+  color: 'red'
+
+inputs:
+  stride-api-key:
+    description: 'STRIDE-GPT API key (get free key at https://stridegpt.ai)'
+    required: true
+  github-token:
+    description: 'GitHub token for repository access'
+    required: true
+    default: ${{ github.token }}
+  trigger-mode:
+    description: 'Trigger mode: comment or pr'
+    required: false
+    default: 'comment'
+
+outputs:
+  threat-count:
+    description: 'Number of threats identified'
+  report-url:
+    description: 'URL to the analysis comment'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    STRIDE_API_KEY: ${{ inputs.stride-api-key }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}
+    TRIGGER_MODE: ${{ inputs.trigger-mode }}

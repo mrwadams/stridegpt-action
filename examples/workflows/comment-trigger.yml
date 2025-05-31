@@ -1,0 +1,23 @@
+name: Security Analysis on Comment
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  stride-analysis:
+    # Only run on PR comments that mention @stride-gpt
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '@stride-gpt')
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    
+    steps:
+      - name: Run STRIDE-GPT Analysis
+        uses: mrwadams/stride-gpt-action@v1
+        with:
+          stride-api-key: ${{ secrets.STRIDE_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
