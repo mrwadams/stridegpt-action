@@ -55,10 +55,10 @@ async def main():
                 sys.exit(1)
             
             comment_body = github_context.get("event", {}).get("comment", {}).get("body", "")
-            pr_number = github_context.get("event", {}).get("issue", {}).get("number")
+            issue_number = github_context.get("event", {}).get("issue", {}).get("number")
             
-            if not pr_number:
-                print("::error::Could not determine PR number")
+            if not issue_number:
+                print("::error::Could not determine issue/PR number")
                 sys.exit(1)
             
             # Check if comment mentions @stride-gpt
@@ -66,30 +66,49 @@ async def main():
                 print("Comment does not mention @stride-gpt, skipping")
                 sys.exit(0)
             
+            # Determine if this is a PR comment or issue comment
+            is_pull_request = github_context.get("event", {}).get("issue", {}).get("pull_request") is not None
+            
             # Parse command
             command = parse_command(comment_body)
             
             if command == "help":
-                await reporter.post_help_comment(pr_number)
+                await reporter.post_help_comment(issue_number, is_pull_request)
             elif command == "status":
                 usage = await stride_client.get_usage()
-                await reporter.post_status_comment(pr_number, usage)
+                await reporter.post_status_comment(issue_number, usage, is_pull_request)
             elif command == "analyze":
-                # Run analysis
-                print(f"::notice::Starting security analysis for PR #{pr_number}")
-                result = await analyzer.analyze_pr(pr_number)
+                if is_pull_request:
+                    # Run PR analysis
+                    print(f"::notice::Starting threat analysis for PR #{issue_number}")
+                    result = await analyzer.analyze_pr(issue_number)
+                else:
+                    # Run feature description analysis
+                    print(f"::notice::Starting threat modeling for feature described in issue #{issue_number}")
+                    result = await analyzer.analyze_feature_description(issue_number)
                 
                 # Post results
-                comment_url = await reporter.post_analysis_comment(pr_number, result)
+                comment_url = await reporter.post_analysis_comment(issue_number, result, is_pull_request)
                 
                 # Set outputs
-                with open(os.environ.get('GITHUB_OUTPUT', '/dev/stdout'), 'a') as f:
-                    f.write(f"threat-count={result.threat_count}\n")
-                    f.write(f"report-url={comment_url}\n")
+                try:
+                    output_file = os.environ.get('GITHUB_OUTPUT', '/dev/stdout')
+                    if output_file != '/dev/stdout':
+                        with open(output_file, 'a') as f:
+                            f.write(f"threat-count={result.threat_count}\n")
+                            f.write(f"report-url={comment_url}\n")
+                    else:
+                        print(f"::set-output name=threat-count::{result.threat_count}")
+                        print(f"::set-output name=report-url::{comment_url}")
+                except PermissionError:
+                    # Fallback for systems where we can't write to the output file
+                    print(f"::set-output name=threat-count::{result.threat_count}")
+                    print(f"::set-output name=report-url::{comment_url}")
             else:
                 await reporter.post_error_comment(
-                    pr_number, 
-                    f"Unknown command: {command}. Use '@stride-gpt help' for available commands."
+                    issue_number, 
+                    f"Unknown command: {command}. Use '@stride-gpt help' for available commands.",
+                    is_pull_request
                 )
         
         elif trigger_mode == "pr":

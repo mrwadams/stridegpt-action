@@ -13,8 +13,8 @@ class CommentReporter:
     def __init__(self, github_client: GitHubClient):
         self.github = github_client
     
-    async def post_analysis_comment(self, pr_number: int, result: AnalysisResult) -> str:
-        """Post analysis results as a PR comment."""
+    async def post_analysis_comment(self, issue_number: int, result: AnalysisResult, is_pull_request: bool = True) -> str:
+        """Post analysis results as a comment on issue or PR."""
         
         # Check if limit was reached
         if result.usage_info.get("limit_reached"):
@@ -24,10 +24,14 @@ class CommentReporter:
         else:
             body = self._format_threats_comment(result)
         
-        return self.github.create_comment(pr_number, body)
+        # Use appropriate method based on whether it's a PR or issue
+        if is_pull_request:
+            return self.github.create_comment(issue_number, body)
+        else:
+            return self.github.create_issue_comment(issue_number, body)
     
-    async def post_help_comment(self, pr_number: int) -> str:
-        """Post help information as a PR comment."""
+    async def post_help_comment(self, issue_number: int, is_pull_request: bool = True) -> str:
+        """Post help information as a comment on issue or PR."""
         body = """## 🛡️ STRIDE-GPT Help
 
 ### Available Commands
@@ -52,10 +56,14 @@ Upgrade to STRIDE-GPT Pro for:
 
 [View Pricing →](https://stridegpt.ai/pricing)"""
         
-        return self.github.create_comment(pr_number, body)
+        # Use appropriate method based on whether it's a PR or issue
+        if is_pull_request:
+            return self.github.create_comment(issue_number, body)
+        else:
+            return self.github.create_issue_comment(issue_number, body)
     
-    async def post_status_comment(self, pr_number: int, usage: Dict[str, Any]) -> str:
-        """Post usage status as a PR comment."""
+    async def post_status_comment(self, issue_number: int, usage: Dict[str, Any], is_pull_request: bool = True) -> str:
+        """Post usage status as a comment on issue or PR."""
         analyses_used = usage.get("analyses_used", 0)
         analyses_limit = usage.get("analyses_limit", 50)
         remaining = analyses_limit - analyses_used
@@ -73,10 +81,14 @@ Upgrade to STRIDE-GPT Pro for:
 
 {self._get_upgrade_prompt() if usage.get("plan") == "Free" else ""}"""
         
-        return self.github.create_comment(pr_number, body)
+        # Use appropriate method based on whether it's a PR or issue
+        if is_pull_request:
+            return self.github.create_comment(issue_number, body)
+        else:
+            return self.github.create_issue_comment(issue_number, body)
     
-    async def post_error_comment(self, pr_number: int, error_message: str) -> str:
-        """Post error message as a PR comment."""
+    async def post_error_comment(self, issue_number: int, error_message: str, is_pull_request: bool = True) -> str:
+        """Post error message as a comment on issue or PR."""
         body = f"""## ❌ STRIDE-GPT Error
 
 {error_message}
@@ -86,7 +98,11 @@ Upgrade to STRIDE-GPT Pro for:
 - Visit [documentation](https://stridegpt.ai/docs)
 - Contact [support](https://stridegpt.ai/support)"""
         
-        return self.github.create_comment(pr_number, body)
+        # Use appropriate method based on whether it's a PR or issue
+        if is_pull_request:
+            return self.github.create_comment(issue_number, body)
+        else:
+            return self.github.create_issue_comment(issue_number, body)
     
     def _format_threats_comment(self, result: AnalysisResult) -> str:
         """Format threats into a comment."""
