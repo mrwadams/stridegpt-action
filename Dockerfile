@@ -22,4 +22,4 @@ RUN useradd -m -u 1000 stride && chown -R stride:stride /app
 USER stride
 
 # Run the action
-ENTRYPOINT ["python", "entrypoint.py"]
+ENTRYPOINT ["python", "/app/entrypoint.py"]
