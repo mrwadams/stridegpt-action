@@ -112,6 +112,28 @@ async def main():
                 f.write(f"threat-count={result.threat_count}\n")
                 f.write(f"report-url={comment_url}\n")
         
+        elif trigger_mode == "manual":
+            # Handle manual trigger - analyze the entire repository
+            print(f"::notice::Starting manual security analysis for repository {repo_name}")
+            result = await analyzer.analyze_repository()
+            
+            # For manual triggers, we'll output to the logs instead of PR comments
+            print("::group::STRIDE-GPT Security Analysis Results")
+            print(f"Repository: {repo_name}")
+            print(f"Threats found: {result.threat_count}")
+            if hasattr(result, 'threats') and result.threats:
+                for i, threat in enumerate(result.threats, 1):
+                    print(f"\n--- Threat {i} ---")
+                    print(f"Category: {threat.category}")
+                    print(f"Title: {threat.title}")
+                    print(f"Severity: {threat.severity}")
+                    print(f"Description: {threat.description}")
+            print("::endgroup::")
+            
+            # Set outputs
+            with open(os.environ.get('GITHUB_OUTPUT', '/dev/stdout'), 'a') as f:
+                f.write(f"threat-count={result.threat_count}\n")
+        
         else:
             print(f"::error::Unknown trigger mode: {trigger_mode}")
             sys.exit(1)
