@@ -124,10 +124,18 @@ async def main():
             if hasattr(result, 'threats') and result.threats:
                 for i, threat in enumerate(result.threats, 1):
                     print(f"\n--- Threat {i} ---")
-                    print(f"Category: {threat.category}")
-                    print(f"Title: {threat.title}")
-                    print(f"Severity: {threat.severity}")
-                    print(f"Description: {threat.description}")
+                    # Handle threat as dictionary (API response format)
+                    if isinstance(threat, dict):
+                        print(f"Category: {threat.get('category', 'Unknown')}")
+                        print(f"Title: {threat.get('title', 'Unknown')}")
+                        print(f"Severity: {threat.get('severity', 'Unknown')}")
+                        print(f"Description: {threat.get('description', 'No description')}")
+                    else:
+                        # Handle threat as object (fallback)
+                        print(f"Category: {getattr(threat, 'category', 'Unknown')}")
+                        print(f"Title: {getattr(threat, 'title', 'Unknown')}")
+                        print(f"Severity: {getattr(threat, 'severity', 'Unknown')}")
+                        print(f"Description: {getattr(threat, 'description', 'No description')}")
             print("::endgroup::")
             
             # Set outputs
