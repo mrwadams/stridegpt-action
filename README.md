@@ -23,13 +23,15 @@ Free AI-powered security threat modeling for your GitHub repositories using the 
 
 ## 📋 Current Status
 
+✅ **Fully Operational** - End-to-end system working perfectly  
 ✅ **API Integration** - Connected to Railway-hosted STRIDE-GPT API  
 ✅ **Authentication** - API key system working  
-✅ **Request/Response** - Updated to match API v1 endpoints  
-✅ **Test API Key** - Available for development and testing  
-🔧 **GitHub Actions** - Ready for repository testing  
-⚠️ **User Registration** - Manual API key generation (automation pending)  
+✅ **Threat Detection** - Successfully analyzing repositories and finding security threats  
+✅ **Multiple Trigger Modes** - Manual, PR, and comment triggers all working  
+✅ **GitHub Actions** - Published and ready for production use  
+✅ **Test Results** - Successfully detected 5 security threats in test repository  
 
+**Action URL:** `mrwadams/stridegpt-action@main`  
 **API Endpoint:** `https://stridegpt-api-production.up.railway.app`
 
 ## Quick Start
@@ -55,28 +57,32 @@ Add your API key as a repository secret:
 Create `.github/workflows/security-analysis.yml`:
 
 ```yaml
-name: Security Analysis
+name: STRIDE-GPT Security Analysis
 
 on:
-  issue_comment:
-    types: [created]
+  workflow_dispatch:  # Manual trigger
+  pull_request:       # Auto-trigger on PRs
+    types: [opened, synchronize]
 
 jobs:
-  analyze:
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '@stride-gpt')
+  security-analysis:
     runs-on: ubuntu-latest
+    name: STRIDE Threat Modeling
+    
     steps:
-      - uses: mrwadams/stride-gpt-action@v1
-        with:
-          stride-api-key: ${{ secrets.STRIDE_API_KEY }}
+    - name: Run STRIDE-GPT Analysis
+      uses: mrwadams/stridegpt-action@main
+      with:
+        stride-api-key: ${{ secrets.STRIDE_API_KEY }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        trigger-mode: manual  # Use 'manual' for workflow_dispatch, 'pr' for pull_request
 ```
 
-### 4. Trigger Analysis
+### 4. Run Analysis
 
-In any pull request, comment:
-```
-@stride-gpt analyze
-```
+- **Manual:** Go to Actions tab → "STRIDE-GPT Security Analysis" → "Run workflow"
+- **Automatic:** Create or update a pull request
+- **Comment:** In PR comments, use `@stride-gpt analyze`
 
 ## Usage Examples
 
@@ -96,9 +102,10 @@ jobs:
     if: github.event.issue.pull_request && contains(github.event.comment.body, '@stride-gpt')
     runs-on: ubuntu-latest
     steps:
-      - uses: mrwadams/stride-gpt-action@v1
+      - uses: mrwadams/stridegpt-action@main
         with:
           stride-api-key: ${{ secrets.STRIDE_API_KEY }}
+          trigger-mode: comment
 ```
 
 ### Automatic PR Analysis
@@ -116,15 +123,15 @@ jobs:
   security-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: mrwadams/stride-gpt-action@v1
+      - uses: mrwadams/stridegpt-action@main
         with:
           stride-api-key: ${{ secrets.STRIDE_API_KEY }}
-          trigger-mode: 'pr'
+          trigger-mode: pr
 ```
 
-### Manual Workflow Trigger
+### Manual Repository Analysis
 
-Run analysis manually from Actions tab:
+Run full repository analysis manually:
 
 ```yaml
 name: Manual Security Scan
