@@ -59,13 +59,7 @@ class ActionAnalyzer:
         analysis_request = {
             "repository": repository_url,
             "github_token": self.github.token,  # Pass token for API access
-            "analysis_type": "changed_files",
-            "pr_number": pr_number,
-            "options": {
-                "pr_title": pr.title,
-                "pr_description": pr.body or "",
-                "files_count": len(files)
-            }
+            "pr_number": pr_number
         }
         
         try:
@@ -118,10 +112,7 @@ class ActionAnalyzer:
         analysis_request = {
             "repository": repository_url,
             "github_token": self.github.token,  # Pass token for API access
-            "analysis_type": "full_repository",
-            "options": {
-                "analysis_scope": "full"
-            }
+            "analysis_type": "full_repository"
         }
         
         try:
