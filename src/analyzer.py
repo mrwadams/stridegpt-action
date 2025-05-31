@@ -37,8 +37,7 @@ class ActionAnalyzer:
                 "Visit https://stridegpt.ai/pricing to upgrade."
             )
         
-        # Get PR information
-        pr = self.github.get_pr(pr_number)
+        # Get PR information  
         files = self.github.get_pr_files(pr_number)
         
         if not files:
