@@ -108,9 +108,19 @@ async def main():
             comment_url = await reporter.post_analysis_comment(pr_number, result)
             
             # Set outputs
-            with open(os.environ.get('GITHUB_OUTPUT', '/dev/stdout'), 'a') as f:
-                f.write(f"threat-count={result.threat_count}\n")
-                f.write(f"report-url={comment_url}\n")
+            try:
+                output_file = os.environ.get('GITHUB_OUTPUT', '/dev/stdout')
+                if output_file != '/dev/stdout':
+                    with open(output_file, 'a') as f:
+                        f.write(f"threat-count={result.threat_count}\n")
+                        f.write(f"report-url={comment_url}\n")
+                else:
+                    print(f"::set-output name=threat-count::{result.threat_count}")
+                    print(f"::set-output name=report-url::{comment_url}")
+            except PermissionError:
+                # Fallback to legacy output format
+                print(f"::set-output name=threat-count::{result.threat_count}")
+                print(f"::set-output name=report-url::{comment_url}")
         
         elif trigger_mode == "manual":
             # Handle manual trigger - analyze the entire repository
@@ -139,8 +149,16 @@ async def main():
             print("::endgroup::")
             
             # Set outputs
-            with open(os.environ.get('GITHUB_OUTPUT', '/dev/stdout'), 'a') as f:
-                f.write(f"threat-count={result.threat_count}\n")
+            try:
+                output_file = os.environ.get('GITHUB_OUTPUT', '/dev/stdout')
+                if output_file != '/dev/stdout':
+                    with open(output_file, 'a') as f:
+                        f.write(f"threat-count={result.threat_count}\n")
+                else:
+                    print(f"::set-output name=threat-count::{result.threat_count}")
+            except PermissionError:
+                # Fallback to legacy output format
+                print(f"::set-output name=threat-count::{result.threat_count}")
         
         else:
             print(f"::error::Unknown trigger mode: {trigger_mode}")
