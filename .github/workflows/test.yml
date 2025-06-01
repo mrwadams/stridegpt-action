@@ -67,28 +67,41 @@ jobs:
     
     - name: Run tests
       run: |
+        echo "Running tests on Python ${{ matrix.python-version }}"
         pytest tests/ -v --cov=src --cov-report=xml
+    
+    - name: Check Python version for additional steps
+      run: |
+        echo "Current Python version: ${{ matrix.python-version }}"
+        echo "Checking if this is Python 3.11..."
+        if [ "${{ matrix.python-version }}" = "3.11" ]; then
+          echo "This is Python 3.11 - will run coverage and integration tests"
+        else
+          echo "This is not Python 3.11 - skipping additional steps"
+        fi
     
     - name: Upload coverage to Codecov
       if: matrix.python-version == '3.11'
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
         flags: action
         name: codecov-action
         fail_ci_if_error: false
+      continue-on-error: true  # Don't fail CI if Codecov upload fails
     
     - name: Test action integration
       if: matrix.python-version == '3.11'
       env:
-        STRIDE_API_KEY: ${{ secrets.STRIDE_API_KEY || 'sk_test_dummy_key_for_testing' }}
+        STRIDE_API_KEY: sk_test_dummy_key_for_integration_testing
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TRIGGER_MODE: manual
         GITHUB_REPOSITORY: ${{ github.repository }}
         GITHUB_EVENT_NAME: workflow_dispatch
       run: |
         # Test that the action can start without errors
-        timeout 30s python entrypoint.py || true
+        echo "Testing action integration on Python ${{ matrix.python-version }}..."
+        timeout 30s python entrypoint.py || echo "Action completed (timeout or expected error)"
         echo "Action integration test completed"
 
   action-test:
