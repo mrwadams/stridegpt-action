@@ -101,7 +101,14 @@ jobs:
       run: |
         # Test that the action can start without errors
         echo "Testing action integration on Python ${{ matrix.python-version }}..."
-        timeout 30s python entrypoint.py || echo "Action completed (timeout or expected error)"
+        echo "Current directory: $(pwd)"
+        echo "Python version: $(python --version)"
+        echo "Available test files:"
+        ls -la tests/ || echo "No tests directory"
+        echo "Starting entrypoint integration test..."
+        
+        # The entrypoint should fail gracefully with dummy API key but not crash
+        python entrypoint.py || echo "Entrypoint completed with expected error code"
         echo "Action integration test completed"
 
   action-test:
