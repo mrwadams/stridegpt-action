@@ -3,6 +3,7 @@ Comment Reporter - Formats and posts analysis results to GitHub
 """
 
 from typing import Dict, Any
+from datetime import datetime
 from .github_client import GitHubClient
 from .analyzer import AnalysisResult
 from .stride_client import StrideClient
@@ -75,13 +76,13 @@ Upgrade to STRIDE-GPT Pro for:
 ### Current Month
 - **Analyses Used**: {analyses_used} of {analyses_limit}
 - **Remaining**: {remaining}
-- **Plan**: {usage.get("plan", "Free")}
+- **Plan**: {usage.get("plan", "Free").title()}
 
-### Usage Details
-- **Current Period**: {usage.get("period_start", "N/A")} to {usage.get("period_end", "N/A")}
-- **Account**: {usage.get("account", "N/A")}
+### Billing Period  
+- **Period**: {self._format_date(usage.get("period_start"))} to {self._format_date(usage.get("period_end"))}
+- **Days Remaining**: {self._calculate_days_remaining(usage.get("period_end"))}
 
-{self._get_upgrade_prompt() if usage.get("plan") == "Free" else ""}"""
+{self._get_upgrade_prompt() if usage.get("plan", "free").lower() == "free" else ""}"""
         
         # Use appropriate method based on whether it's a PR or issue
         if is_pull_request:
@@ -274,3 +275,52 @@ Upgrade to STRIDE-GPT Pro for:
             analyses_used = usage_info.get("analyses_used", 0)
             analyses_limit = usage_info.get("analyses_limit", 50)
             return f"\n*You've used {analyses_used} of {analyses_limit} free analyses this month*"
+    
+    def _format_date(self, date_str: str) -> str:
+        """Format date for user-friendly display."""
+        if date_str and date_str != "N/A":
+            try:
+                # Handle various date formats
+                if isinstance(date_str, str):
+                    # Remove Z and replace with +00:00 for UTC
+                    if date_str.endswith('Z'):
+                        date_str = date_str.replace('Z', '+00:00')
+                    elif not date_str.endswith('+00:00') and not date_str.endswith('UTC'):
+                        date_str = date_str + '+00:00'
+                    
+                    date_obj = datetime.fromisoformat(date_str)
+                else:
+                    date_obj = date_str  # Already a datetime object
+                
+                return date_obj.strftime("%b %d, %Y")
+            except (ValueError, AttributeError):
+                return date_str  # Return as-is if parsing fails
+        return "N/A"
+    
+    def _calculate_days_remaining(self, period_end: str) -> str:
+        """Calculate days remaining in the current period."""
+        if period_end and period_end != "N/A":
+            try:
+                # Handle various date formats
+                if isinstance(period_end, str):
+                    if period_end.endswith('Z'):
+                        period_end = period_end.replace('Z', '+00:00')
+                    elif not period_end.endswith('+00:00') and not period_end.endswith('UTC'):
+                        period_end = period_end + '+00:00'
+                    
+                    end_date = datetime.fromisoformat(period_end)
+                else:
+                    end_date = period_end  # Already a datetime object
+                
+                now = datetime.now(end_date.tzinfo) if end_date.tzinfo else datetime.now()
+                days_left = (end_date - now).days
+                
+                if days_left > 0:
+                    return f"{days_left} days"
+                elif days_left == 0:
+                    return "Last day"
+                else:
+                    return "Period ended"
+            except (ValueError, AttributeError):
+                return "Unknown"
+        return "N/A"
