@@ -4,3 +4,8 @@ httpx
 pydantic
 tenacity
 python-dotenv
+
+# Development (when running tests)
+pytest
+pytest-asyncio
+pytest-cov
