@@ -71,6 +71,9 @@ Upgrade to STRIDE-GPT Pro for:
         analyses_limit = usage.get("analyses_limit", 50)
         remaining = analyses_limit - analyses_used
         
+        # Get trend emoji
+        trend_emoji = self._get_trend_emoji(usage.get("usage_trend", "stable"))
+        
         body = f"""## 📊 STRIDE-GPT Usage Status
 
 ### Current Month
@@ -81,6 +84,12 @@ Upgrade to STRIDE-GPT Pro for:
 ### Billing Period  
 - **Period**: {self._format_date(usage.get("period_start"))} to {self._format_date(usage.get("period_end"))}
 - **Days Remaining**: {self._calculate_days_remaining(usage.get("period_end"))}
+
+{self._get_usage_analytics_section(usage)}
+
+{self._get_feature_access_section(usage)}
+
+{self._get_account_info_section(usage)}
 
 {self._get_upgrade_prompt() if usage.get("plan", "free").lower() == "free" else ""}"""
         
@@ -324,3 +333,90 @@ Upgrade to STRIDE-GPT Pro for:
             except (ValueError, AttributeError):
                 return "Unknown"
         return "N/A"
+    
+    def _get_trend_emoji(self, trend: str) -> str:
+        """Get emoji for usage trend."""
+        trend_map = {
+            "up": "⬆️",
+            "down": "⬇️", 
+            "stable": "➡️"
+        }
+        return trend_map.get(trend, "➡️")
+    
+    def _get_usage_analytics_section(self, usage: Dict[str, Any]) -> str:
+        """Generate usage analytics section."""
+        daily_avg = usage.get("daily_average")
+        projected = usage.get("projected_usage")
+        trend = usage.get("usage_trend", "stable")
+        trend_emoji = self._get_trend_emoji(trend)
+        
+        if daily_avg is not None and projected is not None:
+            return f"""### 📈 Usage Analytics
+- **Daily Average**: {daily_avg} analyses/day
+- **Projected Month**: {projected} analyses {trend_emoji}
+- **Usage Trend**: {trend.title()}"""
+        return ""
+    
+    def _get_feature_access_section(self, usage: Dict[str, Any]) -> str:
+        """Generate feature access summary."""
+        plan = usage.get("plan", "free").lower()
+        
+        # Create feature list
+        feature_lines = []
+        
+        # Always available features
+        feature_lines.append("✅ Basic threat detection")
+        feature_lines.append("✅ STRIDE methodology")
+        
+        # Plan-specific features
+        if plan == "free":
+            feature_lines.append("✅ Simple severity ratings")
+            feature_lines.append("🔒 DREAD scoring (Starter+ feature)")
+            feature_lines.append("🔒 Attack trees (Pro+ feature)")
+            feature_lines.append("🔒 Detailed mitigations (Pro+ feature)")
+            feature_lines.append("🔒 Private repositories (Starter+ feature)")
+        elif plan == "starter":
+            feature_lines.append("✅ DREAD risk scoring")
+            feature_lines.append("✅ Advanced severity analysis")
+            feature_lines.append("✅ Private repositories")
+            feature_lines.append("🔒 Attack trees (Pro+ feature)")
+            feature_lines.append("🔒 Detailed mitigations (Pro+ feature)")
+        elif plan == "pro":
+            feature_lines.append("✅ DREAD risk scoring")
+            feature_lines.append("✅ Attack tree visualization")
+            feature_lines.append("✅ Detailed mitigation steps")
+            feature_lines.append("✅ Private repositories")
+            feature_lines.append("🔒 Custom rules (Enterprise feature)")
+        elif plan == "enterprise":
+            feature_lines.append("✅ All advanced features")
+            feature_lines.append("✅ Custom security rules")
+            feature_lines.append("✅ Compliance mapping")
+            feature_lines.append("✅ Priority support")
+        
+        features_text = "\n".join([f"- {line}" for line in feature_lines])
+        
+        return f"""### 🔓 Feature Access
+{features_text}"""
+    
+    def _get_account_info_section(self, usage: Dict[str, Any]) -> str:
+        """Generate account information section."""
+        api_key_created = usage.get("api_key_created")
+        last_usage = usage.get("last_usage")
+        
+        lines = []
+        
+        if api_key_created:
+            created_date = self._format_date(api_key_created)
+            lines.append(f"- **API Key Created**: {created_date}")
+        
+        if last_usage:
+            last_used_date = self._format_date(last_usage)
+            lines.append(f"- **Last Activity**: {last_used_date}")
+        
+        if lines:
+            account_text = "\n".join(lines)
+            return f"""### 👤 Account Details
+{account_text}"""
+        
+        return """### 👤 Account Details
+- **Account**: Active"""
