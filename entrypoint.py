@@ -45,7 +45,7 @@ async def main():
         github_client = GitHubClient(github_token, repo_name)
         stride_client = StrideClient(api_key)
         analyzer = ActionAnalyzer(github_client, stride_client)
-        reporter = CommentReporter(github_client)
+        reporter = CommentReporter(github_client, stride_client)
         
         # Handle different trigger modes
         if trigger_mode == "comment":
