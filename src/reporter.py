@@ -5,13 +5,13 @@ Comment Reporter - Formats and posts analysis results to GitHub
 from typing import Dict, Any
 from .github_client import GitHubClient
 from .analyzer import AnalysisResult
-from .stride_client import StrideAPIClient
+from .stride_client import StrideClient
 
 
 class CommentReporter:
     """Formats and posts analysis results as GitHub comments."""
     
-    def __init__(self, github_client: GitHubClient, stride_client: StrideAPIClient = None):
+    def __init__(self, github_client: GitHubClient, stride_client: StrideClient = None):
         self.github = github_client
         self.stride = stride_client
     
