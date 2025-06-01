@@ -5,13 +5,15 @@ Comment Reporter - Formats and posts analysis results to GitHub
 from typing import Dict, Any
 from .github_client import GitHubClient
 from .analyzer import AnalysisResult
+from .stride_client import StrideClient
 
 
 class CommentReporter:
     """Formats and posts analysis results as GitHub comments."""
     
-    def __init__(self, github_client: GitHubClient):
+    def __init__(self, github_client: GitHubClient, stride_client: StrideClient = None):
         self.github = github_client
+        self.stride = stride_client
     
     async def post_analysis_comment(self, issue_number: int, result: AnalysisResult, is_pull_request: bool = True) -> str:
         """Post analysis results as a comment on issue or PR."""
@@ -20,9 +22,9 @@ class CommentReporter:
         if result.usage_info.get("limit_reached"):
             body = self._format_limit_reached_comment()
         elif result.threat_count == 0:
-            body = self._format_no_threats_comment(result)
+            body = await self._format_no_threats_comment(result)
         else:
-            body = self._format_threats_comment(result)
+            body = await self._format_threats_comment(result)
         
         # Use appropriate method based on whether it's a PR or issue
         if is_pull_request:
@@ -104,13 +106,23 @@ Upgrade to STRIDE-GPT Pro for:
         else:
             return self.github.create_issue_comment(issue_number, body)
     
-    def _format_threats_comment(self, result: AnalysisResult) -> str:
+    async def _format_threats_comment(self, result: AnalysisResult) -> str:
         """Format threats into a comment."""
         severity_emoji = {
             "high": "🔴",
             "medium": "🟡", 
             "low": "🟢"
         }
+        
+        # Get current plan info
+        try:
+            if self.stride:
+                current_usage = await self.stride.get_usage()
+                plan_name = current_usage.get("plan", "free").title()
+            else:
+                plan_name = "Free"
+        except Exception:
+            plan_name = "Free"
         
         # Count threats by severity
         severity_counts = {"high": 0, "medium": 0, "low": 0}
@@ -120,7 +132,7 @@ Upgrade to STRIDE-GPT Pro for:
         
         # Build comment
         lines = [
-            "## 🛡️ STRIDE Security Analysis (Free Tier)",
+            f"## 🛡️ STRIDE Security Analysis ({plan_name} Tier)",
             "",
             "### Summary",
             f"- **Threats Found**: {result.threat_count} {'of 5 max' if result.is_limited else ''}",
@@ -153,20 +165,36 @@ Upgrade to STRIDE-GPT Pro for:
                 ""
             ])
         
-        # Add upgrade prompt
+        # Add upgrade prompt and usage footer
         lines.extend([
             "---",
             "",
             self._get_upgrade_prompt(),
-            "",
-            self._get_usage_footer(result.usage_info)
+            ""
         ])
+        
+        # Add real-time usage footer
+        usage_footer = await self._get_usage_footer(result.usage_info)
+        lines.append(usage_footer)
         
         return "\n".join(lines)
     
-    def _format_no_threats_comment(self, result: AnalysisResult) -> str:
+    async def _format_no_threats_comment(self, result: AnalysisResult) -> str:
         """Format comment when no threats are found."""
-        return f"""## 🛡️ STRIDE Security Analysis (Free Tier)
+        # Get current plan info
+        try:
+            if self.stride:
+                current_usage = await self.stride.get_usage()
+                plan_name = current_usage.get("plan", "free").title()
+            else:
+                plan_name = "Free"
+        except Exception:
+            plan_name = "Free"
+            
+        # Get real-time usage footer
+        usage_footer = await self._get_usage_footer(result.usage_info)
+        
+        return f"""## 🛡️ STRIDE Security Analysis ({plan_name} Tier)
 
 ### ✅ No Security Threats Detected
 
@@ -188,7 +216,7 @@ While no obvious threats were found, STRIDE-GPT Pro offers:
 
 [Upgrade to Pro →](https://stridegpt.ai/pricing)
 
-{self._get_usage_footer(result.usage_info)}"""
+{usage_footer}"""
     
     def _format_limit_reached_comment(self) -> str:
         """Format comment when usage limit is reached."""
@@ -225,9 +253,24 @@ Upgrade to STRIDE-GPT Pro for:
 
 [Get Started →](https://stridegpt.ai/pricing)"""
     
-    def _get_usage_footer(self, usage_info: Dict[str, Any]) -> str:
-        """Get usage footer for comments."""
-        analyses_used = usage_info.get("analyses_used", 0)
-        analyses_limit = usage_info.get("analyses_limit", 50)
-        
-        return f"\n*You've used {analyses_used} of {analyses_limit} free analyses this month*"
+    async def _get_usage_footer(self, usage_info: Dict[str, Any]) -> str:
+        """Get usage footer for comments with real-time data."""
+        try:
+            # Fetch real-time usage data if stride client is available
+            if self.stride:
+                current_usage = await self.stride.get_usage()
+                analyses_used = current_usage.get("analyses_used", 0)
+                analyses_limit = current_usage.get("analyses_limit", 50)
+                plan = current_usage.get("plan", "free").title()
+            else:
+                # Fallback to metadata from analysis result
+                analyses_used = usage_info.get("analyses_used", 0)
+                analyses_limit = usage_info.get("analyses_limit", 50)
+                plan = usage_info.get("plan", "free").title()
+            
+            return f"\n*You've used {analyses_used} of {analyses_limit} {plan.lower()} analyses this month*"
+        except Exception:
+            # Fallback to original behavior on error
+            analyses_used = usage_info.get("analyses_used", 0)
+            analyses_limit = usage_info.get("analyses_limit", 50)
+            return f"\n*You've used {analyses_used} of {analyses_limit} free analyses this month*"
