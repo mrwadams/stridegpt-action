@@ -78,8 +78,7 @@ Upgrade to STRIDE-GPT Pro for:
 - **Remaining**: {remaining}
 - **Plan**: {usage.get("plan", "Free").title()}
 
-### Account Details  
-- **User**: {usage.get("account", "N/A")}
+### Billing Period  
 - **Period**: {self._format_date(usage.get("period_start"))} to {self._format_date(usage.get("period_end"))}
 - **Days Remaining**: {self._calculate_days_remaining(usage.get("period_end"))}
 
