@@ -197,8 +197,20 @@ Upgrade to a paid plan for:
                 ]
             )
 
-        # Add upgrade message if limited
-        if result.is_limited:
+        # Add limitation notice if provided by the API
+        if result.limitation_notice:
+            lines.extend(
+                [
+                    "---",
+                    "",
+                    f"⚠️ **{result.limitation_notice}**",
+                    "",
+                    "[Upgrade Now →](https://stridegpt.ai/pricing)",
+                    "",
+                ]
+            )
+        elif result.is_limited:
+            # Fallback to previous behavior if no limitation notice is provided
             lines.extend(
                 [
                     "---",
