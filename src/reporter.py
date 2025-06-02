@@ -53,7 +53,7 @@ class CommentReporter:
 - **Basic severity ratings** (Low/Medium/High)
 
 ### Want More?
-Upgrade to STRIDE GPT Pro for:
+Upgrade to a paid plan for:
 - ✨ High-volume analysis plans
 - 📊 DREAD risk scoring
 - 🔒 Private repository support
@@ -161,7 +161,7 @@ Upgrade to STRIDE GPT Pro for:
             f"## 🛡️ STRIDE GPT Threat Model Analysis ({plan_name} Tier)",
             "",
             "### Summary",
-            f"- **Threats Found**: {result.threat_count} {'of 3 max (upgrade for more)' if result.is_limited else ''}",
+            f"- **Threats Found**: {result.threat_count} {'(free tier shows 3 max)' if result.is_limited else ''}",
             "- **Analysis Scope**: Changed files only",
             f"- **Severity Levels**: {severity_counts['critical']} Critical, {severity_counts['high']} High, {severity_counts['medium']} Medium, {severity_counts['low']} Low",
             "",
@@ -249,7 +249,7 @@ Great job! No obvious security threats were found in the changed files.
 
 ### 💡 Want Deeper Threat Modeling?
 
-While no obvious threats were found, STRIDE GPT Pro offers:
+While no obvious threats were found, paid plans offer:
 - 🔍 **Deep code analysis** with AI-powered pattern recognition
 - 📊 **DREAD scoring** for risk prioritization
 - 🛠️ **Detailed remediation** guidance
@@ -286,7 +286,7 @@ Upgrade to a paid plan for:
     def _get_upgrade_prompt(self) -> str:
         """Get upgrade prompt for free tier users."""
         return """### 📈 Want More Detailed Threat Modeling?
-Upgrade to STRIDE GPT Pro for:
+Upgrade to a paid plan for:
 - ✨ DREAD risk scoring
 - 🛠️ Detailed mitigation steps
 - 🔒 Private repository support
