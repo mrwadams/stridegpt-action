@@ -39,7 +39,7 @@ class CommentReporter:
         self, issue_number: int, is_pull_request: bool = True
     ) -> str:
         """Post help information as a comment on issue or PR."""
-        body = """## 🛡️ STRIDE-GPT Help
+        body = """## 🛡️ STRIDE GPT Help
 
 ### Available Commands
 - `@stride-gpt analyze` - Run security analysis on changed files
@@ -53,7 +53,7 @@ class CommentReporter:
 - **Basic severity ratings** (Low/Medium/High)
 
 ### Want More?
-Upgrade to STRIDE-GPT Pro for:
+Upgrade to STRIDE GPT Pro for:
 - ✨ Unlimited analyses
 - 🌳 Attack tree visualization
 - 📊 DREAD risk scoring
@@ -80,7 +80,7 @@ Upgrade to STRIDE-GPT Pro for:
         # Get trend emoji
         trend_emoji = self._get_trend_emoji(usage.get("usage_trend", "stable"))
 
-        body = f"""## 📊 STRIDE-GPT Usage Status
+        body = f"""## 📊 STRIDE GPT Usage Status
 
 ### Current Month
 - **Analyses Used**: {analyses_used} of {analyses_limit}
@@ -109,7 +109,7 @@ Upgrade to STRIDE-GPT Pro for:
         self, issue_number: int, error_message: str, is_pull_request: bool = True
     ) -> str:
         """Post error message as a comment on issue or PR."""
-        body = f"""## ❌ STRIDE-GPT Error
+        body = f"""## ❌ STRIDE GPT Error
 
 {error_message}
 
@@ -126,7 +126,8 @@ Upgrade to STRIDE-GPT Pro for:
 
     async def _format_threats_comment(self, result: AnalysisResult) -> str:
         """Format threats into a comment."""
-        severity_emoji = {"high": "🔴", "medium": "🟡", "low": "🟢"}
+        severity_emoji = {"critical": "🚨", "high": "🔴", "medium": "🟡", "low": "🟢", "info": "ℹ️"}
+        severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
 
         # Get current plan info
         try:
@@ -138,35 +139,50 @@ Upgrade to STRIDE-GPT Pro for:
         except Exception:
             plan_name = "Free"
 
+        # Sort threats by severity (Critical first, Info last)
+        sorted_threats = sorted(
+            result.threats,
+            key=lambda t: severity_order.get(t.get("severity", "medium").lower(), 2)
+        )
+        
         # Count threats by severity
-        severity_counts = {"high": 0, "medium": 0, "low": 0}
-        for threat in result.threats:
+        severity_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+        for threat in sorted_threats:
             severity = threat.get("severity", "medium").lower()
             severity_counts[severity] = severity_counts.get(severity, 0) + 1
 
         # Build comment
         lines = [
-            f"## 🛡️ STRIDE Security Analysis ({plan_name} Tier)",
+            f"## 🛡️ STRIDE GPT Threat Model Analysis ({plan_name} Tier)",
             "",
             "### Summary",
             f"- **Threats Found**: {result.threat_count} {'of 5 max' if result.is_limited else ''}",
             "- **Analysis Scope**: Changed files only",
-            f"- **Severity Levels**: {severity_counts['high']} High, {severity_counts['medium']} Medium, {severity_counts['low']} Low",
+            f"- **Severity Levels**: {severity_counts['critical']} Critical, {severity_counts['high']} High, {severity_counts['medium']} Medium, {severity_counts['low']} Low",
             "",
             "### Identified Threats",
             "",
         ]
 
-        # Add each threat
-        for threat in result.threats:
+        # Add each threat (already sorted by severity)
+        for threat in sorted_threats:
             severity = threat.get("severity", "medium").lower()
             emoji = severity_emoji.get(severity, "🟡")
+            
+            # Only show file info if it's actually available and useful
+            file_info_parts = []
+            if threat.get('file') and threat.get('file') != 'Unknown':
+                file_line = threat.get('line', '')
+                if file_line and file_line != '?':
+                    file_info_parts.append(f"**File**: `{threat.get('file')}:{file_line}`")
+                else:
+                    file_info_parts.append(f"**File**: `{threat.get('file')}`")
 
             lines.extend(
                 [
                     f"#### {emoji} {severity.upper()}: {threat.get('title', 'Unknown Threat')}",
                     f"**Category**: {threat.get('category', 'Unknown')}",
-                    f"**File**: `{threat.get('file', 'Unknown')}:{threat.get('line', '?')}`",
+                ] + file_info_parts + [
                     f"**Description**: {threat.get('description', 'No description provided')}",
                     "",
                 ]
@@ -200,7 +216,7 @@ Upgrade to STRIDE-GPT Pro for:
         # Get real-time usage footer
         usage_footer = await self._get_usage_footer(result.usage_info)
 
-        return f"""## 🛡️ STRIDE Security Analysis ({plan_name} Tier)
+        return f"""## 🛡️ STRIDE GPT Threat Model Analysis ({plan_name} Tier)
 
 ### ✅ No Security Threats Detected
 
@@ -211,9 +227,9 @@ Great job! No obvious security threats were found in the changed files.
 - **Analysis Type**: Basic STRIDE methodology
 - **Severity Levels**: Low/Medium/High
 
-### 💡 Want Deeper Analysis?
+### 💡 Want Deeper Threat Modeling?
 
-While no obvious threats were found, STRIDE-GPT Pro offers:
+While no obvious threats were found, STRIDE GPT Pro offers:
 - 🔍 **Deep code analysis** with AI-powered pattern recognition
 - 🌳 **Attack tree generation** to visualize potential attack paths
 - 📊 **DREAD scoring** for risk prioritization
@@ -249,8 +265,8 @@ Upgrade to a paid plan for:
 
     def _get_upgrade_prompt(self) -> str:
         """Get upgrade prompt for free tier users."""
-        return """### 📈 Want More Detailed Analysis?
-Upgrade to STRIDE-GPT Pro for:
+        return """### 📈 Want More Detailed Threat Modeling?
+Upgrade to STRIDE GPT Pro for:
 - ✨ DREAD risk scoring
 - 🌳 Attack tree visualization
 - 🛠️ Detailed mitigation steps
