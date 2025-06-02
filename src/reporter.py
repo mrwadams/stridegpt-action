@@ -47,19 +47,18 @@ class CommentReporter:
 - `@stride-gpt status` - Check your usage limits
 
 ### Free Tier Limits
-- **50 analyses per month** per GitHub account
-- **5 threats maximum** per analysis
+- **20 analyses per month** per GitHub account
+- **3 threats maximum** per analysis
 - **Public repositories only**
 - **Basic severity ratings** (Low/Medium/High)
 
 ### Want More?
 Upgrade to STRIDE GPT Pro for:
-- ✨ Unlimited analyses
-- 🌳 Attack tree visualization
+- ✨ High-volume analysis plans
 - 📊 DREAD risk scoring
 - 🔒 Private repository support
 - 🛠️ Detailed mitigation steps
-- 📋 Compliance mapping
+- 🧠 State-of-the-art LLM access
 
 [View Pricing →](https://stridegpt.ai/pricing)"""
 
@@ -74,7 +73,7 @@ Upgrade to STRIDE GPT Pro for:
     ) -> str:
         """Post usage status as a comment on issue or PR."""
         analyses_used = usage.get("analyses_used", 0)
-        analyses_limit = usage.get("analyses_limit", 50)
+        analyses_limit = usage.get("analyses_limit", 20)
         remaining = analyses_limit - analyses_used
 
         # Get trend emoji
@@ -126,7 +125,13 @@ Upgrade to STRIDE GPT Pro for:
 
     async def _format_threats_comment(self, result: AnalysisResult) -> str:
         """Format threats into a comment."""
-        severity_emoji = {"critical": "🚨", "high": "🔴", "medium": "🟡", "low": "🟢", "info": "ℹ️"}
+        severity_emoji = {
+            "critical": "🚨",
+            "high": "🔴",
+            "medium": "🟡",
+            "low": "🟢",
+            "info": "ℹ️",
+        }
         severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
 
         # Get current plan info
@@ -142,9 +147,9 @@ Upgrade to STRIDE GPT Pro for:
         # Sort threats by severity (Critical first, Info last)
         sorted_threats = sorted(
             result.threats,
-            key=lambda t: severity_order.get(t.get("severity", "medium").lower(), 2)
+            key=lambda t: severity_order.get(t.get("severity", "medium").lower(), 2),
         )
-        
+
         # Count threats by severity
         severity_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
         for threat in sorted_threats:
@@ -156,7 +161,7 @@ Upgrade to STRIDE GPT Pro for:
             f"## 🛡️ STRIDE GPT Threat Model Analysis ({plan_name} Tier)",
             "",
             "### Summary",
-            f"- **Threats Found**: {result.threat_count} {'of 5 max' if result.is_limited else ''}",
+            f"- **Threats Found**: {result.threat_count} {'of 3 max (upgrade for more)' if result.is_limited else ''}",
             "- **Analysis Scope**: Changed files only",
             f"- **Severity Levels**: {severity_counts['critical']} Critical, {severity_counts['high']} High, {severity_counts['medium']} Medium, {severity_counts['low']} Low",
             "",
@@ -168,13 +173,15 @@ Upgrade to STRIDE GPT Pro for:
         for threat in sorted_threats:
             severity = threat.get("severity", "medium").lower()
             emoji = severity_emoji.get(severity, "🟡")
-            
+
             # Only show file info if it's actually available and useful
             file_info_parts = []
-            if threat.get('file') and threat.get('file') != 'Unknown':
-                file_line = threat.get('line', '')
-                if file_line and file_line != '?':
-                    file_info_parts.append(f"**File**: `{threat.get('file')}:{file_line}`")
+            if threat.get("file") and threat.get("file") != "Unknown":
+                file_line = threat.get("line", "")
+                if file_line and file_line != "?":
+                    file_info_parts.append(
+                        f"**File**: `{threat.get('file')}:{file_line}`"
+                    )
                 else:
                     file_info_parts.append(f"**File**: `{threat.get('file')}`")
 
@@ -182,15 +189,28 @@ Upgrade to STRIDE GPT Pro for:
                 [
                     f"#### {emoji} {severity.upper()}: {threat.get('title', 'Unknown Threat')}",
                     f"**Category**: {threat.get('category', 'Unknown')}",
-                ] + file_info_parts + [
+                ]
+                + file_info_parts
+                + [
                     f"**Description**: {threat.get('description', 'No description provided')}",
                     "",
                 ]
             )
 
         # Add upgrade message if limited
-        if result.is_limited and result.upgrade_message:
-            lines.extend(["---", "", f"⚠️ **{result.upgrade_message}**", ""])
+        if result.is_limited:
+            lines.extend(
+                [
+                    "---",
+                    "",
+                    "⚠️ **Free Tier Limit Reached**: Only 3 threats shown per analysis",
+                    "",
+                    "💡 **Upgrade to see all threats**: Get comprehensive analysis with enhanced threat detection, DREAD scoring, and state-of-the-art LLMs for deeper insights.",
+                    "",
+                    "[Upgrade Now →](https://stridegpt.ai/pricing)",
+                    "",
+                ]
+            )
 
         # Add upgrade prompt and usage footer
         lines.extend(["---", "", self._get_upgrade_prompt(), ""])
@@ -231,10 +251,10 @@ Great job! No obvious security threats were found in the changed files.
 
 While no obvious threats were found, STRIDE GPT Pro offers:
 - 🔍 **Deep code analysis** with AI-powered pattern recognition
-- 🌳 **Attack tree generation** to visualize potential attack paths
 - 📊 **DREAD scoring** for risk prioritization
 - 🛠️ **Detailed remediation** guidance
 - 🔒 **Private repository** support
+- 🧠 **State-of-the-art LLMs** for deeper analysis
 
 [Upgrade to Pro →](https://stridegpt.ai/pricing)
 
@@ -244,22 +264,22 @@ While no obvious threats were found, STRIDE GPT Pro offers:
         """Format comment when usage limit is reached."""
         return """## 🛑 Monthly Analysis Limit Reached
 
-You've used all 50 free analyses for this month. Your limit will reset at the beginning of next month.
+You've used all 20 free analyses for this month. Your limit will reset at the beginning of next month.
 
 ### Continue Analyzing Today
 
 Upgrade to a paid plan for:
-- ✅ **Unlimited analyses**
-- ✅ **Advanced threat detection**
+- ✅ **High-volume analysis plans**
 - ✅ **DREAD risk scoring**
-- ✅ **Attack tree diagrams**
+- ✅ **State-of-the-art LLM access**
+- ✅ **Detailed mitigation steps**
 - ✅ **Private repository support**
 - ✅ **Priority support**
 
 ### Pricing Plans
 - **Starter** ($29/month): 500 analyses, all Pro features
 - **Pro** ($99/month): 2,500 analyses, API access
-- **Enterprise** ($299/month): Unlimited analyses, SLA support
+- **Enterprise**: Custom pricing - [Contact us](https://stridegpt.ai/contact) for volume discounts
 
 [Upgrade Now →](https://stridegpt.ai/pricing)"""
 
@@ -268,10 +288,10 @@ Upgrade to a paid plan for:
         return """### 📈 Want More Detailed Threat Modeling?
 Upgrade to STRIDE GPT Pro for:
 - ✨ DREAD risk scoring
-- 🌳 Attack tree visualization
 - 🛠️ Detailed mitigation steps
 - 🔒 Private repository support
-- 📊 Compliance mapping
+- 🧠 State-of-the-art LLM access
+- 📊 Risk prioritization
 
 [Get Started →](https://stridegpt.ai/pricing)"""
 
@@ -282,19 +302,19 @@ Upgrade to STRIDE GPT Pro for:
             if self.stride:
                 current_usage = await self.stride.get_usage()
                 analyses_used = current_usage.get("analyses_used", 0)
-                analyses_limit = current_usage.get("analyses_limit", 50)
+                analyses_limit = current_usage.get("analyses_limit", 20)
                 plan = current_usage.get("plan", "free").title()
             else:
                 # Fallback to metadata from analysis result
                 analyses_used = usage_info.get("analyses_used", 0)
-                analyses_limit = usage_info.get("analyses_limit", 50)
+                analyses_limit = usage_info.get("analyses_limit", 20)
                 plan = usage_info.get("plan", "free").title()
 
             return f"\n*You've used {analyses_used} of {analyses_limit} {plan.lower()} analyses this month*"
         except Exception:
             # Fallback to original behavior on error
             analyses_used = usage_info.get("analyses_used", 0)
-            analyses_limit = usage_info.get("analyses_limit", 50)
+            analyses_limit = usage_info.get("analyses_limit", 20)
             return f"\n*You've used {analyses_used} of {analyses_limit} free analyses this month*"
 
     def _format_date(self, date_str: str) -> str:
@@ -386,26 +406,26 @@ Upgrade to STRIDE GPT Pro for:
         if plan == "free":
             feature_lines.append("✅ Simple severity ratings")
             feature_lines.append("🔒 DREAD scoring (Starter+ feature)")
-            feature_lines.append("🔒 Attack trees (Pro+ feature)")
+            feature_lines.append("🔒 State-of-the-art LLMs (Pro+ feature)")
             feature_lines.append("🔒 Detailed mitigations (Pro+ feature)")
             feature_lines.append("🔒 Private repositories (Starter+ feature)")
         elif plan == "starter":
             feature_lines.append("✅ DREAD risk scoring")
             feature_lines.append("✅ Advanced severity analysis")
             feature_lines.append("✅ Private repositories")
-            feature_lines.append("🔒 Attack trees (Pro+ feature)")
+            feature_lines.append("🔒 State-of-the-art LLMs (Pro+ feature)")
             feature_lines.append("🔒 Detailed mitigations (Pro+ feature)")
         elif plan == "pro":
             feature_lines.append("✅ DREAD risk scoring")
-            feature_lines.append("✅ Attack tree visualization")
+            feature_lines.append("✅ State-of-the-art LLM access")
             feature_lines.append("✅ Detailed mitigation steps")
             feature_lines.append("✅ Private repositories")
             feature_lines.append("🔒 Custom rules (Enterprise feature)")
         elif plan == "enterprise":
-            feature_lines.append("✅ All advanced features")
-            feature_lines.append("✅ Custom security rules")
-            feature_lines.append("✅ Compliance mapping")
-            feature_lines.append("✅ Priority support")
+            feature_lines.append("✅ All Pro features included")
+            feature_lines.append("✅ Custom volume pricing")
+            feature_lines.append("✅ Dedicated support")
+            feature_lines.append("📞 Contact us for custom requirements")
 
         features_text = "\n".join([f"- {line}" for line in feature_lines])
 
