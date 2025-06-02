@@ -1,11 +1,11 @@
-name: Security Analysis on Comment
+name: STRIDE GPT Threat Modeling on Comment
 
 on:
   issue_comment:
     types: [created]
 
 jobs:
-  stride-analysis:
+  stride-threat-modeling:
     # Run on both issue and PR comments that mention @stride-gpt
     if: contains(github.event.comment.body, '@stride-gpt')
     runs-on: ubuntu-latest
@@ -16,7 +16,7 @@ jobs:
       issues: write
     
     steps:
-      - name: Run STRIDE-GPT Analysis
+      - name: Run STRIDE GPT Threat Modeling
         uses: mrwadams/stridegpt-action@main
         with:
           stride-api-key: ${{ secrets.STRIDE_API_KEY }}

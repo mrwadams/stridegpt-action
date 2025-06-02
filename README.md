@@ -1,11 +1,11 @@
-# STRIDE-GPT Threat Modeling Action
+# STRIDE GPT Threat Modeling Action
 
 AI-powered threat modeling for your GitHub repositories using the STRIDE methodology.
 
 ## Features
 
 - **STRIDE threat detection** using AI-powered analysis
-- **Severity ratings** (Low/Medium/High)
+- **Severity ratings** (Critical/High/Medium/Low/Info)
 - **Markdown formatted reports** in comments
 - **Support for public repositories**
 - **Analysis of changed files in PRs**
@@ -36,7 +36,7 @@ Add your API key as a repository secret:
 Create `.github/workflows/threat-analysis.yml`:
 
 ```yaml
-name: STRIDE-GPT Threat Modeling
+name: STRIDE GPT Threat Modeling
 
 on:
   workflow_dispatch:  # Manual trigger
@@ -46,10 +46,10 @@ on:
 jobs:
   threat-analysis:
     runs-on: ubuntu-latest
-    name: Threat Analysis
+    name: STRIDE GPT Threat Modeling
     
     steps:
-    - name: Run STRIDE-GPT Analysis
+    - name: Run STRIDE GPT Analysis
       uses: mrwadams/stridegpt-action@main
       with:
         stride-api-key: ${{ secrets.STRIDE_API_KEY }}
@@ -59,7 +59,7 @@ jobs:
 
 ### 4. Run Analysis
 
-- **Manual:** Go to Actions tab → "STRIDE-GPT Threat Modeling" → "Run workflow"
+- **Manual:** Go to Actions tab → "STRIDE GPT Threat Modeling" → "Run workflow"
 - **Automatic:** Create or update a pull request
 - **Comment:** Use `@stride-gpt analyze` in PR or issue comments
 
@@ -83,64 +83,67 @@ When you comment `@stride-gpt analyze` on an **issue**, the action:
 
 ## Usage Examples
 
-### Comment-Triggered Analysis
+### Comment-Triggered Threat Modeling
 
-Analyze when someone comments `@stride-gpt analyze`:
+Run threat modeling when someone comments `@stride-gpt analyze`:
 
 ```yaml
-name: Threat Analysis on Comment
+name: STRIDE GPT Threat Model Analysis on Comment
 
 on:
   issue_comment:
     types: [created]
 
 jobs:
-  stride-analysis:
+  stride-threat-modeling:
     if: github.event.issue.pull_request && contains(github.event.comment.body, '@stride-gpt')
     runs-on: ubuntu-latest
     steps:
-      - uses: mrwadams/stridegpt-action@main
+      - name: Run STRIDE GPT Threat Modeling
+        uses: mrwadams/stridegpt-action@main
         with:
           stride-api-key: ${{ secrets.STRIDE_API_KEY }}
           trigger-mode: comment
 ```
 
-### Automatic PR Analysis
+### Automatic PR Threat Modeling
 
-Automatically analyze all new pull requests:
+Automatically run threat modeling on all new pull requests:
 
 ```yaml
-name: Automatic Threat Review
+name: Automatic STRIDE GPT Threat Model Review
 
 on:
   pull_request:
     types: [opened, synchronize]
 
 jobs:
-  threat-check:
+  threat-modeling:
     runs-on: ubuntu-latest
     steps:
-      - uses: mrwadams/stridegpt-action@main
+      - name: Run STRIDE GPT Threat Modeling
+        uses: mrwadams/stridegpt-action@main
         with:
           stride-api-key: ${{ secrets.STRIDE_API_KEY }}
           trigger-mode: pr
 ```
 
-### Manual Repository Analysis
+### Manual Repository Threat Modeling
 
-Run full repository analysis manually:
+Run full repository threat modeling manually:
 
 ```yaml
-name: Manual Threat Scan
+name: Manual STRIDE GPT Threat Model Scan
 
 on:
   workflow_dispatch:
 
 jobs:
-  analyze:
+  threat-modeling:
     runs-on: ubuntu-latest
     steps:
-      - uses: mrwadams/stridegpt-action@main
+      - name: Run STRIDE GPT Threat Modeling
+        uses: mrwadams/stridegpt-action@main
         with:
           stride-api-key: ${{ secrets.STRIDE_API_KEY }}
           trigger-mode: manual
@@ -148,15 +151,15 @@ jobs:
 
 ## Available Commands
 
-- `@stride-gpt analyze` - Run threat analysis (context-aware):
-  - **In PR comments:** Analyzes changed code files  
-  - **In issue comments:** Analyzes feature description for threats
+- `@stride-gpt analyze` - Run threat modeling (context-aware):
+  - **In PR comments:** Models threats in changed code files  
+  - **In issue comments:** Models threats for proposed features
 
 ## Inputs
 
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
-| `stride-api-key` | Your STRIDE-GPT API key | Yes | - |
+| `stride-api-key` | Your STRIDE GPT API key | Yes | - |
 | `github-token` | GitHub token for API access | Yes | `${{ github.token }}` |
 | `trigger-mode` | How the action is triggered (`comment`, `pr`, or `manual`) | No | `comment` |
 
@@ -170,12 +173,12 @@ jobs:
 ## Example Analysis Output
 
 ```markdown
-## 🛡️ STRIDE Threat Analysis
+## 🛡️ STRIDE GPT Threat Model Analysis
 
 ### Summary
 - **Threats Found**: 3
 - **Analysis Scope**: Changed files
-- **Severity Levels**: 1 High, 2 Medium
+- **Severity Levels**: 0 Critical, 1 High, 2 Medium, 0 Low
 
 ### Identified Threats
 
@@ -206,4 +209,4 @@ This action is provided under the MIT License. See [LICENSE](LICENSE) for detail
 
 ---
 
-Made with ❤️ by the STRIDE-GPT team.
+Made with ❤️ by the STRIDE GPT team.

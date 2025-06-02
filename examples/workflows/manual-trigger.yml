@@ -1,15 +1,15 @@
-name: Manual Security Scan
+name: Manual STRIDE GPT Threat Modeling
 
 on:
   workflow_dispatch:
 
 jobs:
-  manual-analysis:
+  threat-modeling:
     runs-on: ubuntu-latest
-    name: STRIDE Threat Modeling
+    name: STRIDE GPT Threat Modeling
     
     steps:
-      - name: Run STRIDE-GPT Analysis
+      - name: Run STRIDE GPT Threat Modeling
         uses: mrwadams/stridegpt-action@main
         with:
           stride-api-key: ${{ secrets.STRIDE_API_KEY }}

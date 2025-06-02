@@ -1,4 +1,4 @@
-name: 'STRIDE-GPT Threat Modeling'
+name: 'STRIDE GPT Threat Modeling'
 description: 'Free AI-powered security threat modeling using STRIDE methodology'
 author: 'mrwadams'
 branding:
@@ -7,7 +7,7 @@ branding:
 
 inputs:
   stride-api-key:
-    description: 'STRIDE-GPT API key (get free key at https://stridegpt.ai)'
+    description: 'STRIDE GPT API key (get free key at https://stridegpt.ai)'
     required: true
   github-token:
     description: 'GitHub token for repository access'
