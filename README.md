@@ -21,7 +21,10 @@ AI-powered threat modeling for your GitHub repositories using the STRIDE methodo
 
 ### 1. Get Your API Key
 
-Contact the development team for an API key.
+1. **Register** at [https://www.stridegpt.ai](https://www.stridegpt.ai)
+2. **Verify your email** by clicking the link sent to your inbox
+3. **Receive your API key** after email verification
+4. **Save your API key** - it starts with `sk_stride_`
 
 ### 2. Add the API Key to Your Repository
 
@@ -54,13 +57,13 @@ jobs:
       with:
         stride-api-key: ${{ secrets.STRIDE_API_KEY }}
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        trigger-mode: manual  # Use 'manual' for workflow_dispatch, 'pr' for pull_request
+        trigger-mode: manual  # Use 'manual' for workflow_dispatch (full repo analysis)
 ```
 
 ### 4. Run Analysis
 
-- **Manual:** Go to Actions tab → "STRIDE GPT Threat Modeling" → "Run workflow"
-- **Automatic:** Create or update a pull request
+- **Manual:** Go to Actions tab → "STRIDE GPT Threat Modeling" → "Run workflow" (analyzes full repository)
+- **Automatic:** Create or update a pull request (analyzes changed files)
 - **Comment:** Use `@stride-gpt analyze` in PR or issue comments
 
 ## Analysis Types
@@ -128,9 +131,9 @@ jobs:
           trigger-mode: pr
 ```
 
-### Manual Repository Threat Modeling
+### Manual Full Repository Threat Modeling
 
-Run full repository threat modeling manually:
+Run threat modeling on the entire repository manually:
 
 ```yaml
 name: Manual STRIDE GPT Threat Model Scan
@@ -154,6 +157,8 @@ jobs:
 - `@stride-gpt analyze` - Run threat modeling (context-aware):
   - **In PR comments:** Models threats in changed code files  
   - **In issue comments:** Models threats for proposed features
+- `@stride-gpt status` - Check status and usage limits
+- `@stride-gpt help` - Display available commands and usage information
 
 ## Inputs
 
@@ -161,7 +166,7 @@ jobs:
 |-------|-------------|----------|---------|
 | `stride-api-key` | Your STRIDE GPT API key | Yes | - |
 | `github-token` | GitHub token for API access | Yes | `${{ github.token }}` |
-| `trigger-mode` | How the action is triggered (`comment`, `pr`, or `manual`) | No | `comment` |
+| `trigger-mode` | How the action is triggered: `comment` (PR/issue comments), `pr` (automatic on PR), or `manual` (full repo scan) | No | `comment` |
 
 ## Outputs
 
@@ -195,12 +200,22 @@ jobs:
 
 ## Limitations
 
-- Public repositories only
+- **Free Plan**: Public repositories only
+- **Paid Plans**: Coming soon
 - PR analysis limited to changed files
 - Issue analysis requires feature description in issue body
 
+## Security & Authentication
+
+- **API Key Security**: Keep your API key secure and never commit it to version control
+- **Email Verification**: All accounts require email verification for security
+- **Rate Limiting**: API calls are rate-limited to prevent abuse
+- **JWT Authentication**: Web dashboard uses JWT tokens for session management
+
 ## Support
 
+- 🌐 [Dashboard](https://www.stridegpt.ai/dashboard) - View usage and manage API keys
+- 📚 [Documentation](https://www.stridegpt.ai/docs) - API documentation
 - 🐛 [Report Issues](https://github.com/mrwadams/stridegpt-action/issues)
 
 ## License
