@@ -36,11 +36,29 @@ class StrideClient:
             )
 
             if response.status_code == 402:
-                raise PaymentRequiredError(
-                    "Monthly limit reached. Please upgrade your plan."
-                )
+                # Check if this is a private repo plan restriction
+                try:
+                    error_data = response.json() if response.content else {}
+                    error_message = error_data.get("detail", "")
+                except:
+                    error_message = ""
+                
+                if "private" in error_message.lower():
+                    raise PaymentRequiredError(
+                        "Private repositories require a paid STRIDE-GPT plan. "
+                        "Visit https://stridegpt.ai/pricing to upgrade."
+                    )
+                else:
+                    raise PaymentRequiredError(
+                        "Monthly limit reached. Please upgrade your plan."
+                    )
             elif response.status_code == 403:
-                raise ForbiddenError("Invalid API key or insufficient permissions.")
+                try:
+                    error_data = response.json() if response.content else {}
+                    error_message = error_data.get("detail", "Invalid API key or insufficient permissions.")
+                except:
+                    error_message = "Invalid API key or insufficient permissions."
+                raise ForbiddenError(error_message)
             elif response.status_code == 429:
                 raise RateLimitError("Rate limit exceeded. Please try again later.")
 

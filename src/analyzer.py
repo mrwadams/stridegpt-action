@@ -32,13 +32,6 @@ class ActionAnalyzer:
     async def analyze_pr(self, pr_number: int) -> AnalysisResult:
         """Analyze a pull request for security threats."""
 
-        # Check if repo is public (free tier only supports public repos)
-        if not self.github.is_public_repo():
-            raise ForbiddenError(
-                "Private repositories require a paid STRIDE-GPT plan. "
-                "Visit https://stridegpt.ai/pricing to upgrade."
-            )
-
         # Get PR information
         files = self.github.get_pr_files(pr_number)
 
@@ -62,6 +55,7 @@ class ActionAnalyzer:
             "repository": repository_url,
             "github_token": self.github.token,  # Pass token for API access
             "pr_number": pr_number,
+            "is_private": not self.github.is_public_repo(),  # Let API know repo visibility
         }
 
         try:
@@ -102,13 +96,6 @@ class ActionAnalyzer:
     async def analyze_feature_description(self, issue_number: int) -> AnalysisResult:
         """Analyze a proposed feature description for security threats."""
 
-        # Check if repo is public (free tier only supports public repos)
-        if not self.github.is_public_repo():
-            raise ForbiddenError(
-                "Private repositories require a paid STRIDE-GPT plan. "
-                "Visit https://stridegpt.ai/pricing to upgrade."
-            )
-
         # Get issue description
         feature_description = self.github.get_issue_description(issue_number)
 
@@ -131,6 +118,7 @@ class ActionAnalyzer:
             "repository": repository_url,
             "github_token": self.github.token,
             "analysis_type": "feature_description",
+            "is_private": not self.github.is_public_repo(),  # Let API know repo visibility
             "options": {
                 "feature_description": feature_description,
                 "issue_number": issue_number,
@@ -175,13 +163,6 @@ class ActionAnalyzer:
     async def analyze_repository(self) -> AnalysisResult:
         """Analyze the entire repository for security threats."""
 
-        # Check if repo is public (free tier only supports public repos)
-        if not self.github.is_public_repo():
-            raise ForbiddenError(
-                "Private repositories require a paid STRIDE-GPT plan. "
-                "Visit https://stridegpt.ai/pricing to upgrade."
-            )
-
         # Prepare analysis request for full repository
         repository_url = self.github.repo_name
         if not repository_url.startswith("https://"):
@@ -191,6 +172,7 @@ class ActionAnalyzer:
             "repository": repository_url,
             "github_token": self.github.token,  # Pass token for API access
             "analysis_type": "full_repository",
+            "is_private": not self.github.is_public_repo(),  # Let API know repo visibility
         }
 
         try:
