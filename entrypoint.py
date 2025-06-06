@@ -179,15 +179,19 @@ async def main():
                     print(f"Analysis time: {metadata['analysis_time_ms']}ms")
                 if "plan" in metadata:
                     print(f"Plan tier: {metadata['plan']}")
-                
+
                 # Show token usage and cost if available
                 if "token_usage" in metadata and metadata["token_usage"]:
                     usage = metadata["token_usage"]
-                    print(f"Token usage: {usage.get('input_tokens', 0)} input → {usage.get('output_tokens', 0)} output")
-                    if usage.get('reasoning_tokens', 0) > 0:
+                    print(
+                        f"Token usage: {usage.get('input_tokens', 0)} input → {usage.get('output_tokens', 0)} output"
+                    )
+                    if usage.get("reasoning_tokens", 0) > 0:
                         print(f"Reasoning tokens: {usage['reasoning_tokens']}")
-                    print(f"Total tokens: {usage.get('total_tokens', usage.get('input_tokens', 0) + usage.get('output_tokens', 0))}")
-                
+                    print(
+                        f"Total tokens: {usage.get('total_tokens', usage.get('input_tokens', 0) + usage.get('output_tokens', 0))}"
+                    )
+
                 if "cost_info" in metadata and metadata["cost_info"]:
                     cost = metadata["cost_info"]
                     print(f"API cost: {cost.get('total_cost_usd', 'N/A')}")
