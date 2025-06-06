@@ -217,7 +217,7 @@ Upgrade to a paid plan for:
                     "",
                     "⚠️ **Free Tier Limit Reached**: Only 3 threats shown per analysis",
                     "",
-                    "💡 **Upgrade to see all threats**: Get comprehensive analysis with enhanced threat detection, DREAD scoring, and state-of-the-art LLMs for deeper insights.",
+                    "💡 **Upgrade to see all threats**: Get comprehensive analysis with enhanced threat modeling, DREAD scoring, and state-of-the-art LLMs for deeper insights.",
                     "",
                     "[Upgrade Now →](https://stridegpt.ai/pricing)",
                     "",
@@ -248,6 +248,9 @@ Upgrade to a paid plan for:
         # Get real-time usage footer
         usage_footer = await self._get_usage_footer(result.usage_info)
 
+        # Generate appropriate messaging based on plan
+        upgrade_section = self._get_no_threats_upgrade_section(plan_name.lower())
+        
         return f"""## 🛡️ STRIDE GPT Threat Model Analysis ({plan_name} Tier)
 
 ### ✅ No Security Threats Detected
@@ -256,19 +259,10 @@ Great job! No obvious security threats were found in the changed files.
 
 ### Analysis Details
 - **Files Analyzed**: Changed files in this PR
-- **Analysis Type**: Basic STRIDE methodology
-- **Severity Levels**: Low/Medium/High
+- **Analysis Type**: {"Basic" if plan_name.lower() == "free" else "Enhanced"} STRIDE methodology
+- **Severity Levels**: {"Low/Medium/High" if plan_name.lower() in ["free", "starter"] else "Low/Medium/High/Critical with DREAD scoring"}
 
-### 💡 Want Deeper Threat Modeling?
-
-While no obvious threats were found, paid plans offer:
-- 🔍 **Deep code analysis** with AI-powered pattern recognition
-- 📊 **DREAD scoring** for risk prioritization
-- 🛠️ **Detailed remediation** guidance
-- 🔒 **Private repository** support
-- 🧠 **State-of-the-art LLMs** for deeper analysis
-
-[Upgrade to Pro →](https://stridegpt.ai/pricing)
+{upgrade_section}
 
 {usage_footer}"""
 
@@ -306,6 +300,55 @@ Upgrade to a paid plan for:
 - 📊 Risk prioritization
 
 [Get Started →](https://stridegpt.ai/pricing)"""
+
+    def _get_no_threats_upgrade_section(self, plan: str) -> str:
+        """Get appropriate upgrade section for no threats found, based on plan."""
+        if plan == "free":
+            return """### 💡 Want Deeper Threat Modeling?
+
+While no obvious threats were found, paid plans offer:
+- 🔍 **Deep code analysis** with AI-powered pattern recognition
+- 📊 **DREAD scoring** for risk prioritization  
+- 🛠️ **Detailed remediation** guidance
+- 🔒 **Private repository** support
+- 🧠 **State-of-the-art LLMs** for deeper analysis
+
+[Upgrade to Starter →](https://stridegpt.ai/pricing)"""
+        elif plan == "starter":
+            return """### 💡 Enhanced Analysis Available
+
+Consider upgrading to Pro for:
+- 🧠 **State-of-the-art LLMs** for deeper analysis
+- 🛠️ **Detailed remediation** guidance  
+- 📊 **Advanced risk analysis**
+- 🔍 **Enhanced pattern recognition**
+
+[Upgrade to Pro →](https://stridegpt.ai/pricing)"""
+        elif plan == "pro":
+            return """### ✨ Pro Analysis Complete
+
+You're using our most advanced threat modeling capabilities:
+- ✅ **State-of-the-art LLMs** enabled
+- ✅ **DREAD scoring** available
+- ✅ **Comprehensive analysis** complete
+- ✅ **Advanced pattern recognition** applied
+
+Need custom features? [Contact Enterprise Sales →](https://stridegpt.ai/contact)"""
+        elif plan == "enterprise":
+            return """### 🏢 Enterprise Analysis Complete
+
+You're using our highest-tier threat modeling:
+- ✅ **Custom analysis rules** applied
+- ✅ **Enterprise-grade LLMs** enabled
+- ✅ **Advanced threat modeling** complete
+- ✅ **Dedicated support** available
+
+[Contact your account manager](https://stridegpt.ai/contact) for additional customizations."""
+        else:
+            # Fallback for unknown plans
+            return """### 📊 Analysis Complete
+
+Your current plan provides comprehensive threat modeling. No obvious security threats were found."""
 
     async def _get_usage_footer(self, usage_info: Dict[str, Any]) -> str:
         """Get usage footer for comments with real-time data."""
@@ -411,7 +454,7 @@ Upgrade to a paid plan for:
         feature_lines = []
 
         # Always available features
-        feature_lines.append("✅ Basic threat detection")
+        feature_lines.append("✅ Basic threat modeling")
         feature_lines.append("✅ STRIDE methodology")
 
         # Plan-specific features
