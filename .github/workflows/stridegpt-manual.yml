@@ -1,0 +1,16 @@
+name: Manual STRIDE Threat Modeling
+
+on:
+  workflow_dispatch:
+
+jobs:
+  threat-modeling:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: STRIDE GPT Threat Modeling
+        uses: mrwadams/stridegpt-action@main
+        with:
+          stride-api-key: ${{ secrets.STRIDE_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          trigger-mode: manual
