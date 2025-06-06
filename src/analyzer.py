@@ -55,6 +55,7 @@ class ActionAnalyzer:
             "repository": repository_url,
             "github_token": self.github.token,  # Pass token for API access
             "pr_number": pr_number,
+            "analysis_type": "changed_files",  # Explicitly request PR-specific analysis
             "is_private": not self.github.is_public_repo(),  # Let API know repo visibility
         }
 
