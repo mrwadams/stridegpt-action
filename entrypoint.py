@@ -168,17 +168,17 @@ async def main():
             print(f"Repository: {repo_name}")
             print(f"Analysis ID: {result.analysis_id}")
             print(f"Threats found: {result.threat_count}")
-            
+
             # Show analysis metadata for transparency
-            if hasattr(result, 'usage_info') and result.usage_info:
+            if hasattr(result, "usage_info") and result.usage_info:
                 metadata = result.usage_info
-                if 'model_used' in metadata:
+                if "model_used" in metadata:
                     print(f"Model used: {metadata['model_used']}")
-                if 'analysis_time_ms' in metadata:
+                if "analysis_time_ms" in metadata:
                     print(f"Analysis time: {metadata['analysis_time_ms']}ms")
-                if 'plan' in metadata:
+                if "plan" in metadata:
                     print(f"Plan tier: {metadata['plan']}")
-            
+
             if hasattr(result, "threats") and result.threats:
                 for i, threat in enumerate(result.threats, 1):
                     print(f"\n--- Threat {i} ---")
@@ -187,38 +187,44 @@ async def main():
                         print(f"Category: {threat.get('category', 'Unknown')}")
                         print(f"Title: {threat.get('title', 'Unknown')}")
                         print(f"Severity: {threat.get('severity', 'Unknown')}")
-                        print(f"Description: {threat.get('description', 'No description')}")
-                        
+                        print(
+                            f"Description: {threat.get('description', 'No description')}"
+                        )
+
                         # Show DREAD score if available
-                        if threat.get('dread_score'):
+                        if threat.get("dread_score"):
                             print(f"DREAD Score: {threat.get('dread_score')}/10")
-                            
+
                         # Show affected components if available
-                        if threat.get('affected_files'):
-                            components = threat.get('affected_files', [])
+                        if threat.get("affected_files"):
+                            components = threat.get("affected_files", [])
                             if components:
-                                print(f"Affected components: {', '.join(components[:3])}")
+                                print(
+                                    f"Affected components: {', '.join(components[:3])}"
+                                )
                     else:
                         # Handle threat as object (fallback)
                         print(f"Category: {getattr(threat, 'category', 'Unknown')}")
                         print(f"Title: {getattr(threat, 'title', 'Unknown')}")
                         print(f"Severity: {getattr(threat, 'severity', 'Unknown')}")
-                        print(f"Description: {getattr(threat, 'description', 'No description')}")
-                        
+                        print(
+                            f"Description: {getattr(threat, 'description', 'No description')}"
+                        )
+
                         # Show DREAD score if available
-                        if hasattr(threat, 'dread_score') and threat.dread_score:
+                        if hasattr(threat, "dread_score") and threat.dread_score:
                             print(f"DREAD Score: {threat.dread_score}/10")
-                            
+
                         # Show affected components if available
-                        if hasattr(threat, 'affected_files') and threat.affected_files:
+                        if hasattr(threat, "affected_files") and threat.affected_files:
                             components = threat.affected_files[:3]
                             if components:
                                 print(f"Affected components: {', '.join(components)}")
-            
+
             # Show limitation notice if present
             if result.limitation_notice:
                 print(f"\nNote: {result.limitation_notice}")
-                
+
             print("::endgroup::")
 
             # Set outputs
