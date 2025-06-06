@@ -134,15 +134,17 @@ Upgrade to a paid plan for:
         }
         severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
 
-        # Get current plan info
-        try:
-            if self.stride:
-                current_usage = await self.stride.get_usage()
-                plan_name = current_usage.get("plan", "free").title()
-            else:
+        # Get current plan info from analysis result first, then fallback to API call
+        plan_name = "Free"  # Default fallback
+        if result.usage_info and result.usage_info.get("plan"):
+            plan_name = result.usage_info.get("plan").title()
+        else:
+            try:
+                if self.stride:
+                    current_usage = await self.stride.get_usage()
+                    plan_name = current_usage.get("plan", "free").title()
+            except Exception:
                 plan_name = "Free"
-        except Exception:
-            plan_name = "Free"
 
         # Sort threats by severity (Critical first, Info last)
         sorted_threats = sorted(
@@ -185,11 +187,18 @@ Upgrade to a paid plan for:
                 else:
                     file_info_parts.append(f"**File**: `{threat.get('file')}`")
 
+            # Build threat header with title and category
+            threat_info = [
+                f"#### {emoji} {severity.upper()}: {threat.get('title', 'Unknown Threat')}",
+                f"**Category**: {threat.get('category', 'Unknown')}",
+            ]
+
+            # Add DREAD score if available (for paid plans)
+            if threat.get("dread_score") is not None:
+                threat_info.append(f"**DREAD Score**: {threat.get('dread_score')}/10")
+
             lines.extend(
-                [
-                    f"#### {emoji} {severity.upper()}: {threat.get('title', 'Unknown Threat')}",
-                    f"**Category**: {threat.get('category', 'Unknown')}",
-                ]
+                threat_info
                 + file_info_parts
                 + [
                     f"**Description**: {threat.get('description', 'No description provided')}",
@@ -224,8 +233,12 @@ Upgrade to a paid plan for:
                 ]
             )
 
-        # Add upgrade prompt and usage footer
-        lines.extend(["---", "", self._get_upgrade_prompt(), ""])
+        # Add upgrade prompt for free users only
+        current_plan = (
+            result.usage_info.get("plan", "free") if result.usage_info else "free"
+        )
+        if current_plan.lower() == "free":
+            lines.extend(["---", "", self._get_upgrade_prompt(), ""])
 
         # Add analysis details if available
         if result.usage_info:
@@ -248,6 +261,10 @@ Upgrade to a paid plan for:
                 details.append(
                     f"💰 Cost: {result.usage_info['cost_info']['total_cost_usd']}"
                 )
+
+            # Add model information
+            if result.usage_info.get("model_used"):
+                details.append(f"🤖 Model: {result.usage_info['model_used']}")
 
             if details:
                 lines.extend(["", f"<sub>{' | '.join(details)}</sub>", ""])
@@ -276,15 +293,17 @@ Upgrade to a paid plan for:
 
     async def _format_no_threats_comment(self, result: AnalysisResult) -> str:
         """Format comment when no threats are found."""
-        # Get current plan info
-        try:
-            if self.stride:
-                current_usage = await self.stride.get_usage()
-                plan_name = current_usage.get("plan", "free").title()
-            else:
+        # Get current plan info from analysis result first, then fallback to API call
+        plan_name = "Free"  # Default fallback
+        if result.usage_info and result.usage_info.get("plan"):
+            plan_name = result.usage_info.get("plan").title()
+        else:
+            try:
+                if self.stride:
+                    current_usage = await self.stride.get_usage()
+                    plan_name = current_usage.get("plan", "free").title()
+            except Exception:
                 plan_name = "Free"
-        except Exception:
-            plan_name = "Free"
 
         # Add analysis details if available
         if result.usage_info:
@@ -307,6 +326,10 @@ Upgrade to a paid plan for:
                 details.append(
                     f"💰 Cost: {result.usage_info['cost_info']['total_cost_usd']}"
                 )
+
+            # Add model information
+            if result.usage_info.get("model_used"):
+                details.append(f"🤖 Model: {result.usage_info['model_used']}")
 
         # Get real-time usage footer
         usage_footer = await self._get_usage_footer(result.usage_info)
