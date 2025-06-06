@@ -42,7 +42,7 @@ class StrideClient:
                     error_message = error_data.get("detail", "")
                 except:
                     error_message = ""
-                
+
                 if "private" in error_message.lower():
                     raise PaymentRequiredError(
                         "Private repositories require a paid STRIDE-GPT plan. "
@@ -55,7 +55,9 @@ class StrideClient:
             elif response.status_code == 403:
                 try:
                     error_data = response.json() if response.content else {}
-                    error_message = error_data.get("detail", "Invalid API key or insufficient permissions.")
+                    error_message = error_data.get(
+                        "detail", "Invalid API key or insufficient permissions."
+                    )
                 except:
                     error_message = "Invalid API key or insufficient permissions."
                 raise ForbiddenError(error_message)

@@ -250,7 +250,7 @@ Upgrade to a paid plan for:
 
         # Generate appropriate messaging based on plan
         upgrade_section = self._get_no_threats_upgrade_section(plan_name.lower())
-        
+
         return f"""## 🛡️ STRIDE GPT Threat Model Analysis ({plan_name} Tier)
 
 ### ✅ No Security Threats Detected
