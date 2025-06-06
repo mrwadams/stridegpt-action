@@ -204,6 +204,12 @@ async def main():
                         if "cached_input_cost" in breakdown:
                             print(f"  - Cached input: {breakdown['cached_input_cost']}")
 
+                # Show input prompt if available (useful for debugging)
+                if "input_prompt" in metadata and metadata["input_prompt"]:
+                    print("\n::group::LLM Input Prompt (for debugging)")
+                    print(metadata["input_prompt"])
+                    print("::endgroup::")
+
             if hasattr(result, "threats") and result.threats:
                 for i, threat in enumerate(result.threats, 1):
                     print(f"\n--- Threat {i} ---")
