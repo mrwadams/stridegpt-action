@@ -27,45 +27,51 @@ class StrideClient:
     )
     async def analyze(self, analysis_request: Dict[str, Any]) -> Dict[str, Any]:
         """Submit analysis request to STRIDE-GPT API."""
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{self.base_url}/api/v1/analyze",
-                json=analysis_request,
-                headers=self.headers,
-                timeout=60.0,
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{self.base_url}/api/v1/analyze",
+                    json=analysis_request,
+                    headers=self.headers,
+                    timeout=180.0,
+                )
+        except httpx.TimeoutException:
+            raise StrideAPIError(
+                "Analysis request timed out. Large repositories may take longer to analyze. "
+                "Consider using a smaller repository or contact support if this persists."
             )
 
-            if response.status_code == 402:
-                # Check if this is a private repo plan restriction
-                try:
-                    error_data = response.json() if response.content else {}
-                    error_message = error_data.get("detail", "")
-                except:
-                    error_message = ""
+        if response.status_code == 402:
+            # Check if this is a private repo plan restriction
+            try:
+                error_data = response.json() if response.content else {}
+                error_message = error_data.get("detail", "")
+            except:
+                error_message = ""
 
-                if "private" in error_message.lower():
-                    raise PaymentRequiredError(
-                        "Private repositories require a paid STRIDE-GPT plan. "
-                        "Visit https://stridegpt.ai/pricing to upgrade."
-                    )
-                else:
-                    raise PaymentRequiredError(
-                        "Monthly limit reached. Please upgrade your plan."
-                    )
-            elif response.status_code == 403:
-                try:
-                    error_data = response.json() if response.content else {}
-                    error_message = error_data.get(
-                        "detail", "Invalid API key or insufficient permissions."
-                    )
-                except:
-                    error_message = "Invalid API key or insufficient permissions."
-                raise ForbiddenError(error_message)
-            elif response.status_code == 429:
-                raise RateLimitError("Rate limit exceeded. Please try again later.")
+            if "private" in error_message.lower():
+                raise PaymentRequiredError(
+                    "Private repositories require a paid STRIDE-GPT plan. "
+                    "Visit https://stridegpt.ai/pricing to upgrade."
+                )
+            else:
+                raise PaymentRequiredError(
+                    "Monthly limit reached. Please upgrade your plan."
+                )
+        elif response.status_code == 403:
+            try:
+                error_data = response.json() if response.content else {}
+                error_message = error_data.get(
+                    "detail", "Invalid API key or insufficient permissions."
+                )
+            except:
+                error_message = "Invalid API key or insufficient permissions."
+            raise ForbiddenError(error_message)
+        elif response.status_code == 429:
+            raise RateLimitError("Rate limit exceeded. Please try again later.")
 
-            response.raise_for_status()
-            return response.json()
+        response.raise_for_status()
+        return response.json()
 
     async def get_usage(self) -> Dict[str, Any]:
         """Get current usage statistics."""

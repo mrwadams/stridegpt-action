@@ -161,6 +161,7 @@ async def main():
             print(
                 f"::notice::Starting manual security analysis for repository {repo_name}"
             )
+            print("::notice::This may take up to 3 minutes for large repositories...")
             result = await analyzer.analyze_repository()
 
             # For manual triggers, we'll output to the logs instead of PR comments

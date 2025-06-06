@@ -42,11 +42,13 @@ class TestActionAnalyzer:
         assert call_args["pr_number"] == 42
 
     @pytest.mark.asyncio
-    async def test_analyze_pr_private_repo(self, analyzer, mock_github_client, mock_stride_client):
+    async def test_analyze_pr_private_repo(
+        self, analyzer, mock_github_client, mock_stride_client
+    ):
         """Test PR analysis on private repository."""
         # Configure GitHub client to return private repo
         mock_github_client.is_public_repo.return_value = False
-        
+
         # Configure Stride client to raise ForbiddenError for private repos
         mock_stride_client.analyze.side_effect = ForbiddenError(
             "Private repositories require a paid plan. Upgrade at https://stridegpt.ai/pricing"
