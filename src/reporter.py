@@ -227,6 +227,47 @@ Upgrade to a paid plan for:
         # Add upgrade prompt and usage footer
         lines.extend(["---", "", self._get_upgrade_prompt(), ""])
 
+        # Add analysis details if available
+        if result.usage_info:
+            details = []
+            if result.usage_info.get("analysis_time_ms"):
+                details.append(
+                    f"⏱️ Analysis time: {result.usage_info['analysis_time_ms']}ms"
+                )
+
+            # Add token usage and cost info
+            if result.usage_info.get("token_usage"):
+                usage = result.usage_info["token_usage"]
+                details.append(
+                    f"🔢 Tokens: {usage.get('input_tokens', 0)} → {usage.get('output_tokens', 0)}"
+                )
+
+            if result.usage_info.get("cost_info") and result.usage_info[
+                "cost_info"
+            ].get("total_cost_usd"):
+                details.append(
+                    f"💰 Cost: {result.usage_info['cost_info']['total_cost_usd']}"
+                )
+
+            if details:
+                lines.extend(["", f"<sub>{' | '.join(details)}</sub>", ""])
+
+            # Add collapsible input prompt for debugging
+            if result.usage_info.get("input_prompt"):
+                lines.extend(
+                    [
+                        "",
+                        "<details>",
+                        "<summary>🔍 View LLM Input Prompt (for debugging)</summary>",
+                        "",
+                        "```",
+                        result.usage_info["input_prompt"],
+                        "```",
+                        "</details>",
+                        "",
+                    ]
+                )
+
         # Add real-time usage footer
         usage_footer = await self._get_usage_footer(result.usage_info)
         lines.append(usage_footer)
@@ -245,11 +286,51 @@ Upgrade to a paid plan for:
         except Exception:
             plan_name = "Free"
 
+        # Add analysis details if available
+        if result.usage_info:
+            details = []
+            if result.usage_info.get("analysis_time_ms"):
+                details.append(
+                    f"⏱️ Analysis time: {result.usage_info['analysis_time_ms']}ms"
+                )
+
+            # Add token usage and cost info
+            if result.usage_info.get("token_usage"):
+                usage = result.usage_info["token_usage"]
+                details.append(
+                    f"🔢 Tokens: {usage.get('input_tokens', 0)} → {usage.get('output_tokens', 0)}"
+                )
+
+            if result.usage_info.get("cost_info") and result.usage_info[
+                "cost_info"
+            ].get("total_cost_usd"):
+                details.append(
+                    f"💰 Cost: {result.usage_info['cost_info']['total_cost_usd']}"
+                )
+
         # Get real-time usage footer
         usage_footer = await self._get_usage_footer(result.usage_info)
 
         # Generate appropriate messaging based on plan
         upgrade_section = self._get_no_threats_upgrade_section(plan_name.lower())
+
+        # Build details line if we have info
+        details_line = ""
+        if result.usage_info and "details" in locals() and details:
+            details_line = f"\n<sub>{' | '.join(details)}</sub>\n"
+
+        # Add collapsible input prompt for debugging
+        prompt_section = ""
+        if result.usage_info and result.usage_info.get("input_prompt"):
+            prompt_section = f"""
+<details>
+<summary>🔍 View LLM Input Prompt (for debugging)</summary>
+
+```
+{result.usage_info["input_prompt"]}
+```
+</details>
+"""
 
         return f"""## 🛡️ STRIDE GPT Threat Model Analysis ({plan_name} Tier)
 
@@ -263,7 +344,8 @@ Great job! No obvious security threats were found in the changed files.
 - **Severity Levels**: {"Low/Medium/High" if plan_name.lower() in ["free", "starter"] else "Low/Medium/High/Critical with DREAD scoring"}
 
 {upgrade_section}
-
+{details_line}
+{prompt_section}
 {usage_footer}"""
 
     def _format_limit_reached_comment(self) -> str:
