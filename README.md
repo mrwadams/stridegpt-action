@@ -1,3 +1,5 @@
+> ⚠️ **Deprecated & archived — this Action no longer works.** STRIDE GPT is no longer offered as a paid API, and this Action required a `stridegpt.ai` API key that is no longer issued. Use the free, open-source **[STRIDE GPT app](https://github.com/mrwadams/stride-gpt)** or the **[STRIDE GPT MCP server](https://github.com/mrwadams/mcp-stride-gpt)** instead. Kept for reference only.
+
 # STRIDE GPT Threat Modeling Action
 
 AI-powered threat modeling for your GitHub repositories using the STRIDE methodology.
